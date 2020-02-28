@@ -1,14 +1,18 @@
+
 #lang racket/base
 
-(require net/http-client json net/url racket/port web-server/private/timer)
+(require net/http-client json net/url racket/port web-server/private/timer racket/file racket/bytes file/md5)
 
 (define server (getenv "SERVER"))
-(define token(getenv "ACCESS_TOKEN"))
+(define token (getenv "TOKEN"))
 (define safebooru "safebooru.donmai.us")
 (define limit "20")
-(define page "2")
-(define tags "mario_(series)")
-(define pos (random 20))
+(define page (number->string (random 1 350)))
+(define tags "mario_(series)%20-bowsette")
+(define pos (random 19))
+(define CRLF "\r\n")
+(define boundary (bytes->string/utf-8 (md5 (number->string (current-seconds)))))
+(define boundary-line (string-append "--" boundary CRLF))  
 
 
 (define (search-safebooru)
@@ -17,26 +21,33 @@
  (list-ref posts pos))
   
 
-(define (download-image)
+(define (main)
   (define post (search-safebooru))
   (define url (hash-ref post 'file_url))
   (define md5 (hash-ref post 'md5))
   (define file-ext (hash-ref post 'file_ext))
   (define filename (string-append md5 "." file-ext))
+  (displayln (format "Downloading ~a" filename))
   (call-with-output-file filename
-                        (lambda (in) (port->bytes (get-pure-port (string->url url))))
-                        #:exists 'replace))
+    (lambda (in) (display (port->bytes (get-pure-port (string->url url)))in))
+    #:exists 'replace)
+  
+ (define data
+  (bytes-append
+   (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"media_ids[0]\"; filename=" "\"" filename "\"" CRLF      
+                                        (format "Content-Type: image/~a" (if (eq? file-ext "jpg") "jpeg" "png")) CRLF CRLF))
+                    (file->bytes filename) 
+   (string->bytes/utf-8 (string-append CRLF "--" boundary "--" CRLF))))
+ 
+ (define-values (status headers response)
+  (http-sendrecv server (string-append "/api/v1/statuses") #:ssl? #t #:method #"POST"  #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data))
+  (displayln (format "Uploading to ~a" server))
+  (displayln status)
+  (displayln (read-json response)))
+ 
 
 
-
-(define (upload-image)
-  (define-values (status headers response)
-    (http-sendrecv server (string-append "/api/v1/media") #:ssl? #t #:method "POST" #:headers (list (string-append "Authorization: Bearer " token))  #:data (download-image)))
-  (define data (read-json response))
-  (displayln data))
-
-
-(upload-image)
+(main)
 
 
 ;define tm (start-timer-manager))
