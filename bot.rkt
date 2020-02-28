@@ -21,38 +21,51 @@
  (list-ref posts pos))
   
 
-(define (main)
+(define (attach-media)
   (define post (search-safebooru))
   (define url (hash-ref post 'file_url))
   (define md5 (hash-ref post 'md5))
   (define file-ext (hash-ref post 'file_ext))
   (define filename (string-append md5 "." file-ext))
-  (displayln (format "Downloading ~a" filename))
+  (displayln (format "Downloading ~a from ~a" filename url))
   (call-with-output-file filename
     (lambda (in) (display (port->bytes (get-pure-port (string->url url)))in))
     #:exists 'replace)
   
  (define data
   (bytes-append
-   (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"media_ids[0]\"; filename=" "\"" filename "\"" CRLF      
+   (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"file\"; filename=" "\"" filename "\"" CRLF      
                                         (format "Content-Type: image/~a" (if (eq? file-ext "jpg") "jpeg" "png")) CRLF CRLF))
                     (file->bytes filename) 
    (string->bytes/utf-8 (string-append CRLF "--" boundary "--" CRLF))))
  
  (define-values (status headers response)
-  (http-sendrecv server (string-append "/api/v1/statuses") #:ssl? #t #:method #"POST"  #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data))
-  (displayln (format "Uploading to ~a" server))
+  (http-sendrecv server (string-append "/api/v1/media") #:ssl? #t #:method #"POST"  #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data))
   (displayln status)
-  (displayln (read-json response)))
+  (read-json response))
+  
+
  
 
+(define (upload-attachment)
+(define attachment (attach-media))
+  (define id (hash-ref attachment 'id))
+   (define data
+  (bytes-append
+   (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"media_ids[]\"" CRLF CRLF))
+   (string->bytes/utf-8 id)
+   (string->bytes/utf-8 (string-append CRLF "--" boundary "--" CRLF))))
+  (define-values (status headers response)
+    (http-sendrecv server (string-append "/api/v1/statuses") #:ssl? #t #:method #"POST" #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data)) 
+    (displayln status)
+  (displayln (read-json response)))
+  
+(displayln "Uploading status")
+(upload-attachment)
 
-(main)
+(define tm (start-timer-manager))
+(define (loop)
+ (start-timer tm  600 (upload-attachment))
+  (loop))
 
-
-;define tm (start-timer-manager))
-;define (loop)
- ;(start-timer tm  600 (upload-image))
-  ;loop))
-
-;loop)
+(loop)
