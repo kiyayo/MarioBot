@@ -1,4 +1,4 @@
 #lang info
 
-(define collection "mario-bot")
+(define collection "MarioBot")
 (define deps '("base"))

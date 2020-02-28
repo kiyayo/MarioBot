@@ -65,7 +65,7 @@
 
 (define tm (start-timer-manager))
 (define (loop)
- (start-timer tm  600 (upload-attachment))
+ (start-timer tm 600 (upload-attachment))
   (loop))
 
 (loop)
