@@ -1,7 +1,7 @@
 
 #lang racket/base
 
-(require net/http-client json net/url racket/port web-server/private/timer racket/file racket/bytes file/md5)
+(require net/http-client json net/url racket/port racket/file racket/bytes file/md5)
 
 (define server (getenv "SERVER"))
 (define token (getenv "TOKEN"))
@@ -35,7 +35,8 @@
  (define data
   (bytes-append
    (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"file\"; filename=" "\"" filename "\"" CRLF      
-                                        (format "Content-Type: image/~a" (if (eq? file-ext "jpg") "jpeg" "png")) CRLF CRLF))
+                                        (format "Content-Type: image/~a" (if (eq? file-ext "jpg") "jpeg" "png"))
+                                        CRLF CRLF))
                     (file->bytes filename) 
    (string->bytes/utf-8 (string-append CRLF "--" boundary "--" CRLF))))
  
@@ -59,13 +60,10 @@
     (http-sendrecv server (string-append "/api/v1/statuses") #:ssl? #t #:method #"POST" #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data)) 
     (displayln status)
   (displayln (read-json response)))
-  
-(displayln "Uploading status")
-(upload-attachment)
 
-(define tm (start-timer-manager))
 (define (loop)
- (start-timer tm 600 (upload-attachment))
+(sleep 600)
+(upload-attachment)
   (loop))
 
-(loop)
+
