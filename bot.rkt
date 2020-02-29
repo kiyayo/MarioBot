@@ -27,6 +27,7 @@
 
 (define (search-safebooru)
   (define-values (status header response)(http-sendrecv safebooru (string-append "/posts.json?limit=" limit "&page=" page "&tags="tags ) #:ssl? #t))
+  (displayln status)
   (define posts (read-json response))
  (list-ref posts pos))
   
