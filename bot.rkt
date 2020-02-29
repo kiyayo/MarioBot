@@ -12,7 +12,17 @@
 (define pos (random 19))
 (define CRLF "\r\n")
 (define boundary (bytes->string/utf-8 (md5 (number->string (current-seconds)))))
-(define boundary-line (string-append "--" boundary CRLF))  
+(define boundary-line (string-append "--" boundary CRLF))
+; a table to map file extensions to MIME types:
+(define ext=>mime-type
+  #hash((#"jpg" . #"image/jpeg")
+        (#"png"  . #"image/png")
+        (#"gif"  . #"image/Gif")
+        (#"swf"  . #"application/x-shockwave-flash")
+        (#"mp4"  . #"video/mp4")
+        (#"webm" . #"video/webm")))                                        
+                
+                                        
 
 
 (define (search-safebooru)
@@ -26,6 +36,7 @@
   (define url (hash-ref post 'file_url))
   (define md5 (hash-ref post 'md5))
   (define file-ext (hash-ref post 'file_ext))
+  (define mime-type (hash-ref ext=>mime-type file-ext))
   (define filename (string-append md5 "." file-ext))
   (displayln (format "Downloading ~a from ~a" filename url))
   (call-with-output-file filename
@@ -34,9 +45,8 @@
   
  (define data
   (bytes-append
-   (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"file\"; filename=" "\"" filename "\"" CRLF      
-                                        (format "Content-Type: image/~a" (if (eq? file-ext "jpg") "jpeg" "png"))
-                                        CRLF CRLF))
+   (string->bytes/utf-8 (string-append boundary-line "Content-Disposition: form-data; name=\"file\"; filename=" "\"" filename "\"" CRLF
+                                       "Content-Type: " mime-type CRLF CRLF))
                     (file->bytes filename) 
    (string->bytes/utf-8 (string-append CRLF "--" boundary "--" CRLF))))
  
@@ -61,9 +71,10 @@
     (displayln status)
   (displayln (read-json response)))
 
+;sleep for ten minutes
 (define (loop)
 (sleep 600)
 (upload-attachment)
   (loop))
 
-
+(loop)
