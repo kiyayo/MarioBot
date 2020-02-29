@@ -15,12 +15,12 @@
 (define boundary-line (string-append "--" boundary CRLF))
 ; a table to map file extensions to MIME types:
 (define ext=>mime-type
-  #hash(("jpg" . #"image/jpeg")
-        ("png"  . #"image/png")
-        ("gif"  . #"image/Gif")
-        ("swf"  . #"application/x-shockwave-flash")
-        ("mp4"  . #"video/mp4")
-        ("webm" . #"video/webm")))                                        
+  #hash(("jpg" . "image/jpeg")
+        ("png"  . "image/png")
+        ("gif"  . "image/Gif")
+        ("swf"  . "application/x-shockwave-flash")
+        ("mp4"  . "video/mp4")
+        ("webm" . "video/webm")))                                        
                 
                                         
 
@@ -78,3 +78,5 @@
   (loop))
 
 (loop)
+
+
