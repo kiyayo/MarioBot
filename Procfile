@@ -1,1 +1,1 @@
-worker: racket -l MarioBot/bot
+worker: racket -l mariobot/bot
