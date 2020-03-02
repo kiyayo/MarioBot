@@ -7,9 +7,8 @@
 (define token (getenv "TOKEN"))
 (define safebooru "safebooru.donmai.us")
 (define limit "20")
-(define page (number->string (random 1 350)))
 (define tags "mario_(series)")
-(define pos (random 19))
+
 (define CRLF "\r\n")
 (define boundary (bytes->string/utf-8 (md5 (number->string (current-seconds)))))
 (define boundary-line (string-append "--" boundary CRLF))
@@ -26,14 +25,14 @@
 
 
 (define (search-safebooru)
-  (sleep (* 3.333333333 60))
+  (define pos (random 19))
+  (define page (number->string (random 1 350)))
   (define-values (status header response)(http-sendrecv safebooru (string-append "/posts.json?limit=" limit "&page=" page "&tags="tags ) #:ssl? #t))
   (define posts (read-json response))
  (list-ref posts pos))
   
 
 (define (attach-media)
-  (sleep (* 3.333333333 60))
   (displayln "Obtaining media id")
   (define post (search-safebooru))
   (define url (hash-ref post 'file_url))
@@ -60,8 +59,6 @@
  
 
 (define (upload-attachment)
-  (sleep (* 3.333333333 60))
-  (displayln "Uploading attachment")
 (define attachment (attach-media))
   (define id (hash-ref attachment 'id))
    (define data
@@ -73,10 +70,13 @@
     (http-sendrecv server (string-append "/api/v1/statuses") #:ssl? #t #:method #"POST" #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data)) 
     (displayln status)
   (displayln (read-json response))
-(upload-attachment))
+  (displayln "Uploaded post!"))
 
-
+(define (loop)
+  (sleep 480)
 (upload-attachment)
+(loop))
 
+(loop)
 
 
