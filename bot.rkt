@@ -73,7 +73,7 @@
   (displayln "Uploaded post!"))
 
 (define (loop)
-  (sleep 540)
+  (sleep 600)
 (upload-attachment)
 (loop))
 
