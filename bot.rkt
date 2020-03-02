@@ -26,13 +26,15 @@
 
 
 (define (search-safebooru)
+  (sleep (* 3.333333333 60))
   (define-values (status header response)(http-sendrecv safebooru (string-append "/posts.json?limit=" limit "&page=" page "&tags="tags ) #:ssl? #t))
-  (displayln status)
   (define posts (read-json response))
  (list-ref posts pos))
   
 
 (define (attach-media)
+  (sleep (* 3.333333333 60))
+  (displayln "Obtaining media id")
   (define post (search-safebooru))
   (define url (hash-ref post 'file_url))
   (define md5 (hash-ref post 'md5))
@@ -50,16 +52,16 @@
                                        "Content-Type: " mime-type CRLF CRLF))
                     (file->bytes filename) 
    (string->bytes/utf-8 (string-append CRLF "--" boundary "--" CRLF))))
- 
  (define-values (status headers response)
   (http-sendrecv server (string-append "/api/v1/media") #:ssl? #t #:method #"POST"  #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data))
-  (displayln status)
   (read-json response))
   
 
  
 
 (define (upload-attachment)
+  (sleep (* 3.333333333 60))
+  (displayln "Uploading attachment")
 (define attachment (attach-media))
   (define id (hash-ref attachment 'id))
    (define data
@@ -70,14 +72,11 @@
   (define-values (status headers response)
     (http-sendrecv server (string-append "/api/v1/statuses") #:ssl? #t #:method #"POST" #:headers (list (string-append "Content-Type: multipart/form-data; boundary=" boundary) (string-append "Authorization: Bearer " token)) #:data data)) 
     (displayln status)
-  (displayln (read-json response)))
+  (displayln (read-json response))
+(upload-attachment))
 
-;sleep for ten minutes
-(define (loop)
-(sleep 600)
+
 (upload-attachment)
-  (loop))
 
-(loop)
 
 
