@@ -7,7 +7,7 @@
 (define token (getenv "TOKEN"))
 (define safebooru "safebooru.donmai.us")
 (define limit "20")
-(define tags "mario_(series)")
+(define tags "mario_(series)%20-bowsette")
 
 (define CRLF "\r\n")
 (define boundary (bytes->string/utf-8 (md5 (number->string (current-seconds)))))
