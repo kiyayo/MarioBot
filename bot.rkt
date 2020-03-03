@@ -72,8 +72,9 @@
   (displayln (read-json response))
   (displayln "Uploaded post!"))
 
+;run upload-attachment very 30 mins
 (define (loop)
-  (sleep 600)
+  (sleep 1740)
 (upload-attachment)
 (loop))
 
