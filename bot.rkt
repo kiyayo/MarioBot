@@ -12,7 +12,7 @@
 (define CRLF "\r\n")
 (define boundary (bytes->string/utf-8 (md5 (number->string (current-seconds)))))
 (define boundary-line (string-append "--" boundary CRLF))
-; a table to map file extensions to MIME types:
+; a hashtable mapping file-extensions and their mime types
 (define ext=>mime-type
   #hash(("jpg" . "image/jpeg")
         ("png"  . "image/png")
@@ -60,6 +60,7 @@
 
 (define (upload-attachment)
 (define attachment (attach-media))
+(displayln attachment)
   (define id (hash-ref attachment 'id))
    (define data
   (bytes-append
@@ -72,9 +73,9 @@
   (displayln (read-json response))
   (displayln "Uploaded post!"))
 
-;run upload-attachment very 30 mins
+;run upload-attachment very 30 mins infinitely
 (define (loop)
-  (sleep 1740)
+ (sleep 1740)
 (upload-attachment)
 (loop))
 
