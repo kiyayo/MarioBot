@@ -5,13 +5,12 @@ This script downloads an image from safebooru macthing the tags given and upload
 [Racket](https://download.racket-lang.org/)
 
 # Usage
-
-Set SERVER and TOKEN environment variables then run 
-
+Set token and server environment variables 
 ```shell
+# Compile to bytecode
 raco make bot.rkt
-```
-```shell
+
+# Run the bot 
 racket bot.rkt
 ```
  
