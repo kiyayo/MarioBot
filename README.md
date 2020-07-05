@@ -7,10 +7,7 @@ This script downloads an image from safebooru macthing the tags given and upload
 # Usage
 Set token and server environment variables 
 ```shell
-# Compile to bytecode
-raco make bot.rkt
-
-# Run the bot 
+#Run the bot 
 racket bot.rkt
 ```
  
